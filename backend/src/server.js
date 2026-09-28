@@ -65,18 +65,22 @@ app.use('/api/notifications', notificationRoutes);
 // Central error handler
 app.use(errorHandler);
 
-// Background job: Check certificate expiries at startup and every 6 hours
-notificationService.checkExpiringCertificates();
-setInterval(() => notificationService.checkExpiringCertificates(), 6 * 60 * 60 * 1000);
+// Background job: Check certificate expiries at startup and periodically (non-serverless)
+if (!process.env.VERCEL) {
+  notificationService.checkExpiringCertificates();
+  setInterval(() => notificationService.checkExpiringCertificates(), 6 * 60 * 60 * 1000);
+}
 
-// Start HTTP Server
-const server = app.listen(PORT, () => {
-  console.log(`================================================================`);
-  console.log(`  GOVERNMENT OF INDIA - DEPARTMENT OF LEGAL METROLOGY`);
-  console.log(`  Online Verification & Certification System API Server`);
-  console.log(`  Status: RUNNING on http://localhost:${PORT}`);
-  console.log(`  Public QR Verification: http://localhost:${PORT}/api/public/verify/:id`);
-  console.log(`================================================================`);
-});
+// Start HTTP Server when running standalone (e.g. locally or Render)
+if (!process.env.VERCEL) {
+  const server = app.listen(PORT, () => {
+    console.log(`================================================================`);
+    console.log(`  GOVERNMENT OF INDIA - DEPARTMENT OF LEGAL METROLOGY`);
+    console.log(`  Online Verification & Certification System API Server`);
+    console.log(`  Status: RUNNING on http://localhost:${PORT}`);
+    console.log(`  Public QR Verification: http://localhost:${PORT}/api/public/verify/:id`);
+    console.log(`================================================================`);
+  });
+}
 
 export default app;
