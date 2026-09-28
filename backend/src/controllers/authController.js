@@ -3,8 +3,7 @@ import jwt from 'jsonwebtoken';
 import { db } from '../models/db.js';
 import { auditService } from '../services/auditService.js';
 import { notificationService } from '../services/notificationService.js';
-
-const JWT_SECRET = process.env.JWT_SECRET || 'super-secure-legal-metrology-jwt-secret-key-2026-gov';
+import { JWT_SECRET } from '../config/jwtSecret.js';
 
 export const authController = {
   /**

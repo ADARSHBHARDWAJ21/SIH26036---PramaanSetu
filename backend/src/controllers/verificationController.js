@@ -3,6 +3,7 @@ import { certificateService } from '../services/certificateService.js';
 import { qrService } from '../services/qrService.js';
 import { auditService } from '../services/auditService.js';
 import { notificationService } from '../services/notificationService.js';
+import { getPublicAppUrl } from '../config/publicAppUrl.js';
 
 export const verificationController = {
   /**
@@ -132,8 +133,7 @@ export const verificationController = {
         certificate = await db.createCertificate(certData);
 
         // Generate QR code pointing to live public verification page
-        const baseUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-        qrCodeData = await qrService.generateVerificationQR(certificate.id, baseUrl);
+        qrCodeData = await qrService.generateVerificationQR(certificate.id, getPublicAppUrl(req));
 
         // Audit Log for Certificate
         await auditService.log(

@@ -2,6 +2,7 @@ import { db } from '../models/db.js';
 import { qrService } from '../services/qrService.js';
 import { auditService } from '../services/auditService.js';
 import { notificationService } from '../services/notificationService.js';
+import { getPublicAppUrl } from '../config/publicAppUrl.js';
 
 export const certificateController = {
   /**
@@ -42,8 +43,7 @@ export const certificateController = {
       }
 
       // Generate live QR code data URL
-      const baseUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-      const qrCode = await qrService.generateVerificationQR(certificate.id, baseUrl);
+      const qrCode = await qrService.generateVerificationQR(certificate.id, getPublicAppUrl(req));
 
       return res.json({
         success: true,

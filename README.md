@@ -70,6 +70,8 @@ sih/
 │   ├── package.json
 │   ├── tailwind.config.js
 │   └── vite.config.js
+├── render.yaml              # One-service Render deployment blueprint
+├── DEPLOYMENT.md            # Supabase and Render setup steps
 ├── run_all.bat              # Starts the web backend and frontend
 ├── run_backend.bat          # Starts the web API on http://localhost:5000
 ├── run_frontend.bat         # Starts the web frontend on http://localhost:5173
@@ -136,7 +138,9 @@ npm run dev
    SUPABASE_URL=https://your-project.supabase.co
    SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
    ```
-*(Note: If Supabase keys are not set, the system automatically uses its high-fidelity in-memory engine pre-seeded with all records, so all 28 evaluation steps work out of the box!)*
+*(Without Supabase credentials, the backend uses an in-memory demo dataset. Data changes can be lost on restart or redeploy; use Supabase only if you need persistent records.)*
+
+For a hosted demo with persistent data, follow [DEPLOYMENT.md](./DEPLOYMENT.md). The deployment configuration serves the frontend and API together and requires Supabase credentials.
 
 ---
 

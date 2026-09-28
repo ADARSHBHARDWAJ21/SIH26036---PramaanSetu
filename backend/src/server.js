@@ -1,5 +1,4 @@
 import express from 'express';
-import cors from 'cors';
 import dotenv from 'dotenv';
 import morgan from 'morgan';
 import path from 'path';
@@ -25,12 +24,9 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// CORS setup
-app.use(cors({
-  origin: '*',
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1);
+}
 
 // Body parsers
 app.use(express.json({ limit: '10mb' }));
@@ -41,6 +37,12 @@ app.use(morgan('dev'));
 
 // Static uploads directory for documents / photos
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
+// In production, serve the built web client from the same origin as the API.
+const frontendDist = path.resolve(__dirname, '../../frontend/dist');
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(frontendDist));
+}
 
 // Root endpoint
 app.get('/', (req, res) => {
@@ -73,25 +75,31 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/public', publicRoutes);
 app.use('/api/notifications', notificationRoutes);
 
+if (process.env.NODE_ENV === 'production') {
+  app.get('*', (req, res, next) => {
+    if (req.path === '/api' || req.path.startsWith('/api/')) {
+      return res.status(404).json({ success: false, message: 'API route not found.' });
+    }
+    res.sendFile(path.join(frontendDist, 'index.html'), (err) => {
+      if (err) next(err);
+    });
+  });
+}
+
 // Central error handler
 app.use(errorHandler);
 
-// Background job: Check certificate expiries at startup and periodically (non-serverless)
-if (!process.env.VERCEL) {
-  notificationService.checkExpiringCertificates();
-  setInterval(() => notificationService.checkExpiringCertificates(), 6 * 60 * 60 * 1000);
-}
+// Check certificate expiries at startup and periodically.
+notificationService.checkExpiringCertificates();
+setInterval(() => notificationService.checkExpiringCertificates(), 6 * 60 * 60 * 1000);
 
-// Start HTTP Server when running standalone (e.g. locally or Render)
-if (!process.env.VERCEL) {
-  const server = app.listen(PORT, () => {
-    console.log(`================================================================`);
-    console.log(`  GOVERNMENT OF INDIA - DEPARTMENT OF LEGAL METROLOGY`);
-    console.log(`  Online Verification & Certification System API Server`);
-    console.log(`  Status: RUNNING on http://localhost:${PORT}`);
-    console.log(`  Public QR Verification: http://localhost:${PORT}/api/public/verify/:id`);
-    console.log(`================================================================`);
-  });
-}
+const server = app.listen(PORT, '0.0.0.0', () => {
+  console.log(`================================================================`);
+  console.log(`  GOVERNMENT OF INDIA - DEPARTMENT OF LEGAL METROLOGY`);
+  console.log(`  Online Verification & Certification System API Server`);
+  console.log(`  Status: RUNNING on port ${PORT}`);
+  console.log(`  Public QR Verification: /api/public/verify/:id`);
+  console.log(`================================================================`);
+});
 
 export default app;
