@@ -42,6 +42,17 @@ app.use(morgan('dev'));
 // Static uploads directory for documents / photos
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
+// Root endpoint
+app.get('/', (req, res) => {
+  res.json({
+    status: 'ONLINE',
+    system: 'Department of Legal Metrology - Online Verification System (SIH 26036)',
+    message: 'Backend API is running successfully.',
+    healthCheck: '/api/health',
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({
